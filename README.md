@@ -46,7 +46,7 @@ with only slight modifications where appropriate.
 LibXML bindings for [node.js](http://nodejs.org/)
 
 ```javascript
-var libxmljs = require("libxmljs");
+var libxmljs = require("libxmljs-mt");
 var xml =  '<?xml version="1.0" encoding="UTF-8"?>' +
            '<root>' +
                '<child foo="bar">' +
