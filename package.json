@@ -1,20 +1,22 @@
 {
-  "name": "libxmljs",
+  "name": "libxmljs-mt",
   "author": "Marco Rogers",
   "contributors": [
-    "Jeff Smick"
+    "Jeff Smick",
+    "Roman Shtylman",
+    "Martin von Gagern <Martin.vGagern@gmx.net>"
   ],
-  "description": "libxml bindings for v8 javascript engine",
+  "description": "multi-threaded libxml bindings for v8 javascript engine",
   "version": "0.14.2",
   "scripts": {
     "test": "node --expose_gc ./node_modules/.bin/nodeunit test"
   },
   "repository": {
     "type": "git",
-    "url": "http://github.com/polotek/libxmljs.git"
+    "url": "http://github.com/gagern/libxmljs.git"
   },
   "bugs": {
-    "url": "http://github.com/polotek/libxmljs/issues"
+    "url": "http://github.com/gagern/libxmljs/issues"
   },
   "main": "./index",
   "license": "MIT",
