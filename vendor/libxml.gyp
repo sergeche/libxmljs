@@ -58,11 +58,13 @@
         ['OS=="win"', {
           'defines': [
             'HAVE_WIN32_THREADS',
+            '_REENTRANT',
           ],
         }, {
           'defines': [
             'HAVE_LIBPTHREAD',
             'HAVE_PTHREAD_H',
+            '_REENTRANT',
           ],
         }],
       ]
