@@ -7,7 +7,7 @@
     "Martin von Gagern <Martin.vGagern@gmx.net>"
   ],
   "description": "multi-threaded libxml bindings for v8 javascript engine",
-  "version": "0.14.2",
+  "version": "0.14.3",
   "scripts": {
     "test": "node --expose_gc ./node_modules/.bin/nodeunit test"
   },
