@@ -2,6 +2,7 @@
 [![Build Status](https://secure.travis-ci.org/gagern/libxmljs.svg?branch=master)](http://travis-ci.org/gagern/libxmljs)
 
 This project is a fork of [libxmljs](https://github.com/polotek/libxmljs).
+The current version 0.14.3 is based on libxmljs 0.14.2 and libxml 2.9.2.
 
 Libxmljs was originally designed with single-threaded operations in mind.
 There are no asynchroneous operations for things like parsing XML documents.
@@ -36,6 +37,10 @@ But the corresponding bug report has remained open for too long,
 and even though there was some very valuable discussion going on,
 there were also long spans with no activity at all.
 It is hard to tell when this fork will become obsolete, if ever.
+
+Note that this project makes use of a git submodule for the libxml code,
+so if you are building from a git checkout you might have to perform
+`git submodule update --init` before you can do `npm install`.
 
 Below comes the documentation from the original project,
 with only slight modifications where appropriate.
