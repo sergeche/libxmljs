@@ -7,16 +7,22 @@
 
 namespace libxmljs {
 
-class XmlNode : public node::ObjectWrap {
+class XmlNode : public Nan::ObjectWrap {
 public:
 
     xmlNode* xml_obj;
+
+    // boolean value to check if `xml_obj` was already freed
+    bool freed;
+
+    // backup reference to the doc in case `xml_obj` was already freed
+    xmlDoc* doc;
 
     explicit XmlNode(xmlNode* node);
     virtual ~XmlNode();
 
     static void Initialize(v8::Handle<v8::Object> target);
-    static v8::Persistent<v8::FunctionTemplate> constructor_template;
+    static Nan::Persistent<v8::FunctionTemplate> constructor_template;
 
     // create new XmlElement, XmlAttribute, etc. to wrap a libxml xmlNode
     static v8::Local<v8::Value> New(xmlNode* node);

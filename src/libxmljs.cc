@@ -12,7 +12,7 @@
 namespace libxmljs {
 
 bool tlsInitialized = false;
-nauv_key_t tlsKey;
+Nan::nauv_key_t tlsKey;
 bool isAsync = false; // Only set on V8 thread when no workers are running
 int numWorkers = 0; // Only access from V8 thread
 
@@ -36,7 +36,7 @@ void adjustMem(ssize_t diff)
     if (isAsync)
     {
         WorkerSentinel* worker =
-            static_cast<WorkerSentinel*>(nauv_key_get(&tlsKey));
+            static_cast<WorkerSentinel*>(Nan::nauv_key_get(&tlsKey));
         if (worker)
         {
             worker->parent.memAdjustments += diff;
@@ -60,7 +60,7 @@ void adjustMem(ssize_t diff)
         assert(diff <= 0);
         return;
     }
-    NanAdjustExternalMemory(diff);
+    Nan::AdjustExternalMemory(diff);
 }
 
 void* memMalloc(size_t size)
@@ -104,7 +104,7 @@ char* memStrdup(const char* str)
 WorkerParent::WorkerParent() : memAdjustments(0) {
     if (!tlsInitialized)
     {
-        nauv_key_create(&tlsKey);
+        Nan::nauv_key_create(&tlsKey);
         tlsInitialized = true;
     }
     if (numWorkers++ == 0)
@@ -115,7 +115,7 @@ WorkerParent::WorkerParent() : memAdjustments(0) {
 
 // Tear down in V8 thread
 WorkerParent::~WorkerParent() {
-    NanAdjustExternalMemory(memAdjustments);
+    Nan::AdjustExternalMemory(memAdjustments);
     if (--numWorkers == 0)
     {
         isAsync = false;
@@ -124,13 +124,29 @@ WorkerParent::~WorkerParent() {
 
 // Set up in worker thread
 WorkerSentinel::WorkerSentinel(WorkerParent& parent) : parent(parent) {
-    nauv_key_set(&tlsKey, this);
+    Nan::nauv_key_set(&tlsKey, this);
     xmlMemSetup(memFree, memMalloc, memRealloc, memStrdup);
 }
 
 // Tear down in worker thread
 WorkerSentinel::~WorkerSentinel() {
-    nauv_key_set(&tlsKey, NULL);
+    Nan::nauv_key_set(&tlsKey, NULL);
+}
+
+// callback function for `xmlDeregisterNodeDefault`
+void xmlDeregisterNodeCallback(xmlNode* xml_obj)
+{
+    if (xml_obj->_private)
+    {
+        XmlNode* node = static_cast<XmlNode*>(xml_obj->_private);
+
+        // flag the XmlNode object as freed
+        node->freed = true;
+
+        // save a reference to the doc so we can still `unref` it
+        node->doc = xml_obj->doc;
+    }
+    return;
 }
 
 // ensure destruction at exit time
@@ -139,6 +155,9 @@ LibXMLJS LibXMLJS::instance;
 
 LibXMLJS::LibXMLJS()
 {
+    // set the callback for when a node is about to be freed
+    xmlDeregisterNodeDefault(xmlDeregisterNodeCallback);
+
     // Setup our own memory handling (see xmlmemory.h/c)
     xmlMemSetup(memFree, memMalloc, memRealloc, memStrdup);
 
@@ -152,9 +171,9 @@ LibXMLJS::~LibXMLJS()
 }
 
 v8::Local<v8::Object> listFeatures() {
-    v8::Local<v8::Object> target = NanNew<v8::Object>();
-#define FEAT(x) target->Set(NanNew<v8::String>(# x), \
-                    NanNew<v8::Boolean>(xmlHasFeature(XML_WITH_ ## x)))
+    v8::Local<v8::Object> target = Nan::New<v8::Object>();
+#define FEAT(x) Nan::Set(target, Nan::New<v8::String>(# x).ToLocalChecked(), \
+                    Nan::New<v8::Boolean>(xmlHasFeature(XML_WITH_ ## x)))
     // See enum xmlFeature in parser.h
     FEAT(THREAD);
     FEAT(TREE);
@@ -192,27 +211,25 @@ v8::Local<v8::Object> listFeatures() {
     return target;
 }
 
-// used by node.js to initialize libraries
-extern "C" void
-init(v8::Handle<v8::Object> target)
+NAN_MODULE_INIT(init)
 {
-      NanScope();
+      Nan::HandleScope scope;
 
       XmlDocument::Initialize(target);
       XmlSaxParser::Initialize(target);
 
-      target->Set(NanNew<v8::String>("libxml_version"),
-                  NanNew<v8::String>(LIBXML_DOTTED_VERSION));
+      Nan::Set(target, Nan::New<v8::String>("libxml_version").ToLocalChecked(),
+                  Nan::New<v8::String>(LIBXML_DOTTED_VERSION).ToLocalChecked());
 
-      target->Set(NanNew<v8::String>("libxml_parser_version"),
-                  NanNew<v8::String>(xmlParserVersion));
+      Nan::Set(target, Nan::New<v8::String>("libxml_parser_version").ToLocalChecked(),
+                  Nan::New<v8::String>(xmlParserVersion).ToLocalChecked());
 
-      target->Set(NanNew<v8::String>("libxml_debug_enabled"),
-                  NanNew<v8::Boolean>(debugging));
+      Nan::Set(target, Nan::New<v8::String>("libxml_debug_enabled").ToLocalChecked(),
+                  Nan::New<v8::Boolean>(debugging));
 
-      target->Set(NanNew<v8::String>("features"), listFeatures());
+      Nan::Set(target, Nan::New<v8::String>("features").ToLocalChecked(), listFeatures());
 
-      target->Set(NanNew<v8::String>("libxml"), target);
+      Nan::Set(target, Nan::New<v8::String>("libxml").ToLocalChecked(), target);
 }
 
 NODE_MODULE(xmljs, init)

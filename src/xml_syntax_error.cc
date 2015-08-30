@@ -11,12 +11,12 @@ void set_string_field(v8::Local<v8::Object> obj,
     if (!value) {
         return;
     }
-    obj->Set(NanNew<v8::String>(name), NanNew<v8::String>(value, strlen(value)));
+    Nan::Set(obj, Nan::New<v8::String>(name).ToLocalChecked(), Nan::New<v8::String>(value, strlen(value)).ToLocalChecked());
 }
 
 void set_numeric_field(v8::Local<v8::Object> obj,
         const char* name, const int value) {
-    obj->Set(NanNew<v8::String>(name), NanNew<v8::Int32>(value));
+    Nan::Set(obj, Nan::New<v8::String>(name).ToLocalChecked(), Nan::New<v8::Int32>(value));
 }
 
 } // anonymous namespace
@@ -24,7 +24,7 @@ void set_numeric_field(v8::Local<v8::Object> obj,
 namespace libxmljs {
 
 XmlSyntaxErrorsSync::XmlSyntaxErrorsSync() {
-    errors = NanNew<v8::Array>();
+    errors = Nan::New<v8::Array>();
     xmlResetLastError();
     xmlSetStructuredErrorFunc(this, ErrorFunc);
 }
@@ -36,7 +36,7 @@ XmlSyntaxErrorsSync::~XmlSyntaxErrorsSync() {
 v8::Local<v8::Value>
 XmlSyntaxErrorsSync::BuildSyntaxError(xmlError* error) {
     v8::Local<v8::Value> err = v8::Exception::Error(
-            NanNew<v8::String>(error->message));
+            Nan::New<v8::String>(error->message).ToLocalChecked());
     v8::Local<v8::Object> out = v8::Local<v8::Object>::Cast(err);
 
     set_numeric_field(out, "domain", error->domain);
@@ -71,7 +71,7 @@ XmlSyntaxErrorsStore::~XmlSyntaxErrorsStore() {
 
 v8::Local<v8::Array>
 XmlSyntaxErrorsStore::ToArray() {
-    v8::Local<v8::Array> array = NanNew<v8::Array>(errors.size());
+    v8::Local<v8::Array> array = Nan::New<v8::Array>(errors.size());
     for (uint32_t i = 0; i != errors.size(); ++i)
         array->Set(i, XmlSyntaxErrorsSync::BuildSyntaxError(errors[i]));
     return array;
