@@ -7,10 +7,10 @@
     "Martin von Gagern <Martin.vGagern@gmx.net>"
   ],
   "description": "multi-threaded libxml bindings for v8 javascript engine",
-  "version": "0.14.4",
+  "version": "0.14.5",
   "scripts": {
-    "prepublish": "cp vendor/libxml.conf/include/libxml/xmlversion.h vendor/libxml/include/libxml/",
-    "postpublish": "rm vendor/libxml/include/libxml/xmlversion.h",
+    "prepublish": "grep -v xmlversion.h vendor/libxml/.gitignore > vendor/libxml/.npmignore && cp vendor/libxml.conf/include/libxml/xmlversion.h vendor/libxml/include/libxml/",
+    "postpublish": "rm vendor/libxml/.npmignore vendor/libxml/include/libxml/xmlversion.h",
     "test": "node --expose_gc ./node_modules/.bin/nodeunit test"
   },
   "repository": {

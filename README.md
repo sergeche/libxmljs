@@ -2,7 +2,7 @@
 [![Build Status](https://secure.travis-ci.org/gagern/libxmljs.svg?branch=master)](http://travis-ci.org/gagern/libxmljs)
 
 This project is a fork of [libxmljs](https://github.com/polotek/libxmljs).
-The current version 0.14.4 is based on libxmljs 0.14.3 and libxml 2.9.2.
+The current version 0.14.5 is based on libxmljs 0.14.3 and libxml 2.9.2.
 
 Libxmljs was originally designed with single-threaded operations in mind.
 There are no asynchroneous operations for things like parsing XML documents.
