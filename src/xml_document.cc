@@ -341,12 +341,6 @@ NAN_METHOD(XmlDocument::FromXml)
     return info.GetReturnValue().Set(doc_handle);
 }
 
-#ifdef LIBXML_DEBUG_ENABLED
-static const bool xiEnabled = true;
-#else
-static const bool xiEnabled = false;
-#endif
-
 NAN_METHOD(XmlDocument::FromXmlFile)
 {
     Nan::HandleScope scope;
