@@ -341,6 +341,42 @@ NAN_METHOD(XmlDocument::FromXml)
     return info.GetReturnValue().Set(doc_handle);
 }
 
+#ifdef LIBXML_DEBUG_ENABLED
+static const bool xiEnabled = true;
+#else
+static const bool xiEnabled = false;
+#endif
+
+NAN_METHOD(XmlDocument::FromXmlFile)
+{
+    Nan::HandleScope scope;
+    XmlSyntaxErrorsSync errors; // RAII sentinel
+
+    xmlParserOption opts = getXmlParserOption(info[1]->ToObject());
+    v8::String::Utf8Value filename(info[0]->ToString());
+
+    xmlDocPtr doc = xmlReadFile(*filename, NULL, opts);
+
+    if (!doc) {
+        xmlError* error = xmlGetLastError();
+        if (error) {
+            return Nan::ThrowError(XmlSyntaxErrorsSync::BuildSyntaxError(error));
+        }
+        return Nan::ThrowError("Could not parse XML file");
+    }
+
+    v8::Local<v8::Object> doc_handle = XmlDocument::New(doc);
+    Nan::Set(doc_handle, Nan::New<v8::String>("errors").ToLocalChecked(), errors.ToArray());
+
+    xmlNode* root_node = xmlDocGetRootElement(doc);
+    if (root_node == NULL) {
+        return Nan::ThrowError("parsed document has no root element");
+    }
+
+    // create the xml document handle to return
+    return info.GetReturnValue().Set(doc_handle);
+}
+
 class FromXmlWorker : public Nan::AsyncWorker
 {
     char *data;
@@ -564,6 +600,7 @@ XmlDocument::Initialize(v8::Handle<v8::Object> target)
 
 
     Nan::SetMethod(target, "fromXml", XmlDocument::FromXml);
+    Nan::SetMethod(target, "fromXmlFile", XmlDocument::FromXmlFile);
     Nan::SetMethod(target, "fromXmlAsync", XmlDocument::FromXmlAsync);
     Nan::SetMethod(target, "fromHtml", XmlDocument::FromHtml);
 
